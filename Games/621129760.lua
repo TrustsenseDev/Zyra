@@ -14,11 +14,6 @@ local mouse = client:GetMouse();
 local DEFAULT_WALK_SPEED = 16
 local DEFAULT_JUMP_POWER = 50
 
-if ( not IsElectron ) then
-    client:Kick('This script was only made using Electron, it was not tested on other exploits!')
-    return
-end
-
 -- </ Utility Table > --
 local util = {}
 do
@@ -199,7 +194,7 @@ local ESP = loadstring(game:HttpGet('https://raw.githubusercontent.com/wally-rbl
     ESP:Toggle(false);
 
     ESP.FaceCamera = true;
-    ESP.TeamMates = false;
+    ESP.TeamMates = true;
     ESP.Names = false;
     ESP.Tracers = false;
     ESP.Boxes = false;
@@ -211,10 +206,13 @@ Iris:Connect(function()
     local should_show_fov = Iris.State(false)
 
     local fov_attributes = {}
+
     for k, v in pairs(circle_props) do
-        if k ~= "Visible" then
-            fov_attributes["Fov " .. k] = Iris.State(v)
+        if k == "Visible" then
+            continue
         end
+
+        fov_attributes["Fov " .. k] = Iris.State(v)
     end
 
     local fov_range_values = {
@@ -228,7 +226,7 @@ Iris:Connect(function()
     local esp = {}
     esp.Enabled = Iris.State(false)
     esp.FaceCamera = Iris.State(false)
-    esp.Teammates = Iris.State(false)
+    esp.Teammates = Iris.State(true)
     esp.Names = Iris.State(false)
     esp.Tracers = Iris.State(false)
     esp.Boxes = Iris.State(false)
@@ -357,15 +355,32 @@ Iris:Connect(function()
     ESP.Boxes = esp.Boxes.value;
 
     if util.is_alive(client) then
+        local originalStates = {}
+
         util.upd_movement(is_walkspeed_active.value, walkspeed_value.value, is_jumppower_active.value, jumppower_value.value)
         util.fly(is_flight_active.value, flight_speed.value)
 
         if is_noclip_active.value then
-            client.Character.Humanoid:ChangeState(11)
-        end
+            for i = 1, #client.Character:GetDescendants() do
+                local child = client.Character:GetDescendants()[i]
+                if not child:IsA("BasePart") then continue end
+                if not child.CanCollide == true then continue end
 
-        client.DevCameraOcclusionMode = is_noclip_xray_active.value and 1 or 0
+                originalStates[child] = child.CanCollide
+                child.CanCollide = false
+            end
+        else
+            for _ = 1, #originalStates do
+                local part = next(originalStates)
+                if not part then continue end
+
+                part.CanCollide = originalStates[part]
+            end
+            originalStates = {}
+        end
     end
+
+    client.DevCameraOcclusionMode = is_noclip_xray_active.value and 1 or 0
 end)
 
 local argsTable = {}; local __namecall; __namecall = hookmetamethod(game, "__namecall", function(self, ...)
