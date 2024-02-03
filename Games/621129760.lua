@@ -1,11 +1,5 @@
 if shared.cleanup then shared.cleanup() end;
 
-local game = game
-local Drawing = Drawing
-local Color3 = Color3
-local Vector2 = Vector2
-local Ray = Ray
-
 local client = game:GetService('Players').LocalPlayer;
 local camera = workspace.CurrentCamera;
 
